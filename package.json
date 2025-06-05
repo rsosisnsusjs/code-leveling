@@ -3,12 +3,14 @@
   "displayName": "Code Leveling",
   "description": "Level up as you code!",
   "publisher": "rsosisnsusjs",
-  "version": "1.1.2",
+  "version": "0.1.21",
   "engines": {
     "vscode": "^1.100.0"
   },
   "icon": "image/icon.png",
-  "categories": ["Other"],
+  "categories": [
+    "Other"
+  ],
   "activationEvents": [
     "onStartupFinished",
     "onLanguage:javascript",
@@ -20,18 +22,34 @@
   "contributes": {
     "commands": [
       {
+        "command": "codeleveling.showDailyQuests",
+        "title": "Show Daily Quests"
+      },
+      {
         "command": "codeleveling.start",
-        "title": "Code Leveling: Start"
+        "title": "Start Code Leveling"
       },
       {
         "command": "codeleveling.reset",
-        "title": "Code Leveling: Reset XP"
+        "title": "Reset XP"
       },
       {
-        "command": "codeleveling.showDailyQuests",
-        "title": "Code Leveling: Show Daily Quests"
+        "command": "code-leveling.refreshQuests",
+        "title": "Refresh Daily Quests"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "questTree",
+          "name": "Daily Quests"
+        }
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rsosisnsusjs/code-leveling"
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

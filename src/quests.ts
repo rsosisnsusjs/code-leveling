@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { updateStatusBar } from "./extension";
 
 export interface DailyQuest {
   id: string;
@@ -48,8 +49,7 @@ const defaultQuests: DailyQuest[] = [
   {
     id: "save_file_5_times",
     name: "บันทึกไฟล์ 5 ครั้ง",
-    description:
-      "ทุกการบันทึกคือก้าวสู่ความแข็งแกร่ง! Save โค้ดใน VS Code 5 ครั้ง!",
+    description: "ทุกการบันทึกคือก้าวสู่ความแข็งแกร่ง! Save โค้ดใน VS Code 5 ครั้ง!",
     target: 5,
     progress: 0,
     completed: false,
@@ -76,8 +76,7 @@ const defaultQuests: DailyQuest[] = [
   {
     id: "git_push",
     name: "พลังแห่งการพัฒนา",
-    description:
-      "push โค้ดไปยัง remote ของคุณ 5 ครั้ง! พลังของคุณจะครอบงำทุกสิ่ง!",
+    description: "push โค้ดไปยัง remote ของคุณ 5 ครั้ง! พลังของคุณจะครอบงำทุกสิ่ง!",
     target: 5,
     progress: 0,
     completed: false,
@@ -138,54 +137,104 @@ export async function loadDailyQuests(
 export async function updateQuestProgress(
   context: vscode.ExtensionContext,
   questId: string,
-  increment: number
-): Promise<void> {
+  progressDelta: number
+): Promise<{
+  gainedXP?: number;
+  gainedBuffs?: Buff[];
+  questCompleted?: boolean;
+}> {
   const state = await loadDailyQuests(context);
   const quest = state.quests.find((q) => q.id === questId);
-  if (!quest || quest.completed) return;
+  if (!quest || quest.completed) return {};
 
-  quest.progress += increment;
+  quest.progress += progressDelta;
+
+  let gainedXP = 0;
+  let gainedBuffs: Buff[] = [];
+  let questCompleted = false;
+
   if (quest.progress >= quest.target) {
     quest.progress = quest.target;
     quest.completed = true;
+    questCompleted = true;
 
-    // Apply rewards
     if (quest.reward.type === "xp") {
-      const xpData = context.globalState.get<{ xp: number; rank: string }>(
-        "xpData"
-      ) || {
+      // คำนวณ multiplier จาก Buff
+      const now = Date.now();
+      const activeMultiplier = state.activeBuffs
+        .filter((buff) => buff.type === "xpMultiplier" && buff.expiresAt > now)
+        .reduce((total, buff) => total * (buff.multiplier ?? 1), 1);
+
+      const baseXP = quest.reward.amount ?? 0;
+      gainedXP = Math.floor(baseXP * activeMultiplier);
+      
+      // อัปเดต xpData
+      let xpData = context.globalState.get<{ xp: number; rank: string }>("xpData") || {
         xp: 0,
         rank: "E-Rank | Rookie Hunter",
       };
-      xpData.xp += quest.reward.amount ?? 0;
-      xpData.rank = xpData.xp ? getRank(xpData.xp) : "E-Rank | Rookie Hunter";
+      
+      xpData.xp += gainedXP;
+      const newRank = getRank(xpData.xp);
+      
+      // ตรวจสอบการเลื่อนขั้น
+      if (newRank !== xpData.rank) {
+        xpData.rank = newRank;
+        vscode.window.showInformationMessage(
+          `🎉 คุณเลื่อนขั้นเป็น ${newRank}!`
+        );
+      }
+      
       await context.globalState.update("xpData", xpData);
+      
+      // *** เพิ่มบรรทัดนี้ - อัปเดต Status Bar ทันที ***
+      await updateStatusBar(context);
+      
       vscode.window.showInformationMessage(
-        `🎉 คุณได้รับ EXP +${quest.reward.amount} จากภารกิจ '${quest.name}'`
+        `🎉 คุณได้รับ EXP +${gainedXP} (Base ${baseXP} x${activeMultiplier.toFixed(2)}) จากภารกิจ '${quest.name}'`
       );
+
     } else if (quest.reward.type === "xpMultiplier") {
-      const now = Date.now();
       const buff: Buff = {
         type: "xpMultiplier",
         multiplier: quest.reward.multiplier,
-        expiresAt: now + (quest.reward.durationSeconds ?? 600) * 1000,
+        expiresAt: Date.now() + (quest.reward.durationSeconds ?? 600) * 1000,
       };
-      state.activeBuffs.push(buff);
+      gainedBuffs.push(buff);
+
+      // *** เพิ่มบรรทัดนี้ - อัปเดต Status Bar เพื่อแสดง Buff ***
+      await updateStatusBar(context);
+
       vscode.window.showInformationMessage(
         `🔥 คุณได้รับ Buff EXP x${quest.reward.multiplier} นาน ${quest.reward.durationSeconds} วินาที!`
       );
+
     } else if (quest.reward.type === "rankBoostChance") {
       const buff: Buff = {
         type: "rankBoostChance",
         expiresAt: Date.now() + 600 * 1000,
       };
-      state.activeBuffs.push(buff);
+      gainedBuffs.push(buff);
+
+      // *** เพิ่มบรรทัดนี้ - อัปเดต Status Bar เพื่อแสดง Buff ***
+      await updateStatusBar(context);
+
       vscode.window.showInformationMessage(
         `🌟 คุณได้รับโอกาสเลื่อนขั้นแบบพิเศษจากภารกิจ!`
       );
     }
+
+    // เพิ่มบัฟใหม่ลงใน state.activeBuffs
+    state.activeBuffs.push(...gainedBuffs);
   }
+
   await context.globalState.update("dailyQuestState", state);
+
+  return {
+    gainedXP,
+    gainedBuffs,
+    questCompleted,
+  };
 }
 
 export function getRank(xp: number): string {
@@ -236,9 +285,8 @@ async function resetDailyQuests(context: vscode.ExtensionContext) {
     completed: false,
   }));
 
-  state.activeBuffs = []; // เคลียร์ Buffs ด้วยถ้าต้องการ
+  state.activeBuffs = [];
   await context.globalState.update("todayCharCount", 0);
-
   await context.globalState.update("dailyQuestState", state);
 }
 

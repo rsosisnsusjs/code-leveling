@@ -7,6 +7,8 @@ import {
   checkAndResetDailyQuests,
   getRank
 } from "./quests";
+import { addXP } from "./xp"
+import { QuestTreeProvider } from "./questTreeProvider";
 
 const XP_FILE_NAME = ".codeleveler.json";
 
@@ -88,10 +90,65 @@ export async function writeXP(
 let statusBarItem: vscode.StatusBarItem;
 let buffStatusBarItem: vscode.StatusBarItem;
 
-export function activate(context: vscode.ExtensionContext) {
-  let xpData = readXP(context);
+export async function updateStatusBar(context: vscode.ExtensionContext) {
+  const xpData = context.globalState.get<{ xp: number; rank: string }>("xpData") || {
+    xp: 0,
+    rank: "E-Rank | Rookie Hunter",
+  };
+
+  const nextXP = getNextRankXP(xpData.xp);
+  const currentRankData = ranks.find((r) => r.name === xpData.rank);
+  const currentRankXP = currentRankData ? currentRankData.xp : 0;
+
+  let progressText = "";
+
+  if (nextXP !== null) {
+    const percent = Math.min(
+      100,
+      Math.floor(((xpData.xp - currentRankXP) / (nextXP - currentRankXP)) * 100)
+    );
+    const progressBar =
+      "█".repeat(Math.floor(percent / 10)) +
+      "░".repeat(10 - Math.floor(percent / 10));
+    progressText = ` | ${progressBar} ${percent}%`;
+  } else {
+    progressText = " | ██████████ 100%";
+  }
+
+  statusBarItem.text = `💠 ${xpData.rank} (${xpData.xp} XP)${progressText}`;
+  statusBarItem.show();
+
+  const { activeBuffs } = await loadDailyQuests(context);
+  const now = Date.now();
+  const active = activeBuffs.filter((b) => b.expiresAt > now);
+
+  if (active.length > 0) {
+    const buffsText = active
+      .map((b) => {
+        if (b.type === "xpMultiplier") {
+          const timeLeft = Math.ceil((b.expiresAt - now) / 1000);
+          return `🔥 EXP x${b.multiplier} (${timeLeft}s)`;
+        }
+        if (b.type === "rankBoostChance") {
+          const timeLeft = Math.ceil((b.expiresAt - now) / 1000);
+          return `🌟 Rank Boost Chance (${timeLeft}s)`;
+        }
+        return "";
+      })
+      .join(" | ");
+    buffStatusBarItem.text = buffsText;
+    buffStatusBarItem.show();
+  } else {
+    buffStatusBarItem.hide();
+  }
+}
+
+export async function activate(context: vscode.ExtensionContext) {
+
+
+  let xpData = context.globalState.get<XPData>("xpData") || { xp: 0, rank: "E-Rank | Rookie Hunter" };
   checkAndResetDailyQuests(context);
-  
+
   statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
     100
@@ -113,62 +170,33 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(buffStatusBarItem);
   context.subscriptions.push(questButton);
 
-  async function updateStatusBar() {
-    const nextXP = getNextRankXP(xpData.xp);
-    const currentRankData = ranks.find((r) => r.name === xpData.rank);
-    const currentRankXP = currentRankData ? currentRankData.xp : 0;
-    let progressText = "";
+  await context.globalState.update("xpData", xpData);
+  await updateStatusBar(context);
 
-    if (nextXP !== null) {
-      const percent = Math.min(
-        100,
-        Math.floor(
-          ((xpData.xp - currentRankXP) / (nextXP - currentRankXP)) * 100
-        )
-      );
-      const progressBar =
-        "█".repeat(Math.floor(percent / 10)) +
-        "░".repeat(10 - Math.floor(percent / 10));
-      progressText = ` | ${progressBar} ${percent}%`;
-    } else {
-      progressText = " | ██████████ 100%";
-    }
-
-    statusBarItem.text = `💠 ${xpData.rank} (${xpData.xp} XP)${progressText}`;
-    statusBarItem.show();
-
-    const { activeBuffs } = await loadDailyQuests(context);
-    const now = Date.now();
-    const active = activeBuffs.filter((b) => b.expiresAt > now);
-
-    if (active.length > 0) {
-      const buffsText = active
-        .map((b) => {
-          if (b.type === "xpMultiplier") {
-            const timeLeft = Math.ceil((b.expiresAt - now) / 1000);
-            return `🔥 EXP x${b.multiplier} (${timeLeft}s)`;
-          }
-          if (b.type === "rankBoostChance") {
-            const timeLeft = Math.ceil((b.expiresAt - now) / 1000);
-            return `🌟 Rank Boost Chance (${timeLeft}s)`;
-          }
-          return "";
-        })
-        .join(" | ");
-      buffStatusBarItem.text = buffsText;
-      buffStatusBarItem.show();
-    } else {
-      buffStatusBarItem.hide();
-    }
-  }
-
-  updateStatusBar();
-
+  context.subscriptions.push(
+    vscode.commands.registerCommand("codeleveling.updateUI", async () => {
+      // อัปเดต status bar
+      await updateStatusBar(context);
+    })
+  );
   // Auto login quest completion
   (async () => {
     await updateQuestProgress(context, "daily_login", 1);
     vscode.commands.executeCommand("codeleveling.showDailyQuests");
   })();
+
+  // เช็ครีเซ็ต Daily Quest
+  await checkAndResetDailyQuests(context);
+
+  const questTreeProvider = new QuestTreeProvider(context);
+  vscode.window.registerTreeDataProvider("questTree", questTreeProvider);
+
+  // กดรีเฟรชจาก Command ได้
+  const refreshCmd = vscode.commands.registerCommand("code-leveling.refreshQuests", () => {
+    questTreeProvider.refresh();
+  });
+
+  context.subscriptions.push(refreshCmd);
 
   let lastTypingTime = Date.now();
   let typingStartTime = Date.now();
@@ -245,27 +273,17 @@ export function activate(context: vscode.ExtensionContext) {
           );
         }
 
-        if (totalXP > 0) {
-          const { activeBuffs } = await loadDailyQuests(context);
-          const now = Date.now();
-          const multiplier =
-            activeBuffs.find(
-              (b) => b.type === "xpMultiplier" && b.expiresAt > now
-            )?.multiplier ?? 1;
+ if (totalXP > 0) {
+  const { activeBuffs } = await loadDailyQuests(context);
+  const now = Date.now();
+  const multiplier =
+    activeBuffs.find(
+      (b) => b.type === "xpMultiplier" && b.expiresAt > now
+    )?.multiplier ?? 1;
 
-          xpData.xp = Math.floor(xpData.xp + totalXP * multiplier);
-          const newRank = getRankLocal(xpData.xp);
+  await addXP(context, Math.floor(totalXP * multiplier));
+}
 
-          if (newRank !== xpData.rank) {
-            xpData.rank = newRank;
-            vscode.window.showInformationMessage(
-              `🎉 คุณเลื่อนขั้นเป็น ${newRank}!`
-            );
-          }
-
-          await writeXP(context, xpData);
-          updateStatusBar();
-        }
       } catch (error) {
         console.error("❌ Error in text change handler:", error);
       }
@@ -283,10 +301,10 @@ export function activate(context: vscode.ExtensionContext) {
   async function initGitTracking() {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) return;
-    
+
     for (const folder of workspaceFolders) {
       const gitPath = vscode.Uri.joinPath(folder.uri, '.git');
-      
+
       try {
         // ตรวจสอบ git init
         const gitStat = await vscode.workspace.fs.stat(gitPath);
@@ -294,37 +312,37 @@ export function activate(context: vscode.ExtensionContext) {
           await updateQuestProgress(context, "git_init", 1);
           await context.globalState.update(`git_detected_${folder.uri.fsPath}`, true);
         }
-        
+
         // ตรวจ commit
         const commitMsgWatcher = vscode.workspace.createFileSystemWatcher(
           new vscode.RelativePattern(folder, '.git/COMMIT_EDITMSG')
         );
-        
+
         commitMsgWatcher.onDidChange(async () => {
           await updateQuestProgress(context, "git_commit", 1);
         });
-        
+
         // ตรวจ push
         const refsWatcher = vscode.workspace.createFileSystemWatcher(
           new vscode.RelativePattern(folder, '.git/refs/remotes/**')
         );
-        
+
         refsWatcher.onDidChange(async () => {
           await updateQuestProgress(context, "git_push", 1);
         });
-        
+
         refsWatcher.onDidCreate(async () => {
           await updateQuestProgress(context, "git_push", 1);
         });
-        
+
         context.subscriptions.push(commitMsgWatcher, refsWatcher);
-        
+
       } catch (error) {
         console.log('No git repository found in', folder.uri.fsPath);
       }
     }
   }
-  
+
   initGitTracking();
 
   // Commands
@@ -336,15 +354,14 @@ export function activate(context: vscode.ExtensionContext) {
         const items = state.quests.map((q) => ({
           label: q.completed ? "✅ " + q.name : "🔲 " + q.name,
           description: `${q.progress}/${q.target} - ${q.description}`,
-          detail: `รางวัล: ${
-            q.reward.type === "xp"
-              ? `EXP +${q.reward.amount}`
-              : q.reward.type === "xpMultiplier"
+          detail: `รางวัล: ${q.reward.type === "xp"
+            ? `EXP +${q.reward.amount}`
+            : q.reward.type === "xpMultiplier"
               ? `EXP x${q.reward.multiplier} (${q.reward.durationSeconds} วินาที)`
               : "Chance for Rank Boost"
-          }`,
+            }`,
         }));
-        
+
         await vscode.window.showQuickPick(items, {
           placeHolder: "ภารกิจรายวันของคุณ",
         });
@@ -363,7 +380,8 @@ export function activate(context: vscode.ExtensionContext) {
       xpData = { xp: 0, rank: "E-Rank | Rookie Hunter" };
       await writeXP(context, xpData);
       vscode.window.showInformationMessage("🧹 XP ถูกรีเซ็ตเรียบร้อยแล้ว!");
-      updateStatusBar();
+      await context.globalState.update("xpData", xpData);
+      await updateStatusBar(context);
     })
   );
 

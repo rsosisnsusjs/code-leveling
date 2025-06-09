@@ -39,7 +39,7 @@ const defaultQuests: DailyQuest[] = [
   },
   {
     id: "write_1000_chars",
-    name: "พิมพ์โค้ด 1000 ตัวอักษร",
+    name: "โค้ดบูสต์ 1000 ตัว! ปลุกพลังขั้นสุดสู่เทพแห่งโค้ด",
     description: "ช่วยเขียนโค้ด 1000 ตัวอักษรให้ที! ฉันจะไม่ยอมแพ้จนกว่าจะได้!",
     target: 1000,
     progress: 0,
@@ -48,7 +48,7 @@ const defaultQuests: DailyQuest[] = [
   },
   {
     id: "save_file_5_times",
-    name: "บันทึกไฟล์ 5 ครั้ง",
+    name: "จารึกไฟล์ 5 ครั้ง",
     description: "ทุกการบันทึกคือก้าวสู่ความแข็งแกร่ง! Save โค้ดใน VS Code 5 ครั้ง!",
     target: 5,
     progress: 0,
@@ -58,7 +58,7 @@ const defaultQuests: DailyQuest[] = [
   {
     id: "type_special_word",
     name: "พิมพ์คำศักดิ์สิทธิ์! 'Sun God Nikga'",
-    description: "พิมพ์คำว่า 'Sun God Nikga' ในโค้ดของคุณ!",
+    description: "พิมพ์คำว่า 'Sun God Nikga' ในโค้ดของคุณ! (Copy - Paste)",
     target: 1,
     progress: 0,
     completed: false,
@@ -107,7 +107,7 @@ const defaultQuests: DailyQuest[] = [
     target: 1000,
     progress: 0,
     completed: false,
-    reward: { type: "xp", amount: 1669 },
+    reward: { type: "xp", amount: 2000 },
   },
   {
     id: "longest_combo",
@@ -116,7 +116,7 @@ const defaultQuests: DailyQuest[] = [
     target: 1,
     progress: 0,
     completed: false,
-    reward: { type: "xp", amount: 500 },
+    reward: { type: "xp", amount: 10000 },
   },
 ];
 
@@ -171,7 +171,7 @@ export async function updateQuestProgress(
       // อัปเดต xpData
       let xpData = context.globalState.get<{ xp: number; rank: string }>("xpData") || {
         xp: 0,
-        rank: "E-Rank | Rookie Hunter",
+        rank: "E-Rank | 🔰 Rookie Hunter",
       };
       
       xpData.xp += gainedXP;
@@ -238,22 +238,32 @@ export async function updateQuestProgress(
 
 export function getRank(xp: number): string {
   const ranks = [
-    { name: "E-Rank | Rookie Hunter", xp: 0 },
-    { name: "D-Rank | Wandering Adventurer", xp: 101 },
-    { name: "C-Rank | Spirit Exorcist", xp: 501 },
-    { name: "B-Rank | Arcane Alchemist", xp: 1001 },
-    { name: "A-Rank | Crimson Hokage", xp: 3001 },
-    { name: "S-Rank | The One Punch", xp: 5001 },
-    { name: "SS-Rank | Special Grade Sorcerer", xp: 10001 },
-    { name: "SSS-Rank | Shadow Monarch", xp: 20001 },
-    { name: "Mythical-Rank | Transcendent Being", xp: 40001 },
-    { name: "God-Rank | Cosmic Deity", xp: 60001 },
-    { name: "True God-Rank | Allfather of Eternity", xp: 100001 },
-    { name: "Celestial-Rank | Architect of Creation", xp: 200001 },
-    { name: "The One Above All | Supreme Principle", xp: 500001 },
-  ];
+  { name: "E-Rank | 🔰 Rookie Hunter", xp: 0 },
+  { name: "D-Rank | 🚶‍♂️ Wandering Adventurer", xp: 101 },
+  { name: "C-Rank | 👻 Spirit Exorcist", xp: 501 },
+  { name: "B-Rank | 🦾 Arcane Alchemist", xp: 1001 },
+  { name: "A-Rank | 🍥 Fox Hokage", xp: 3001 },
+  { name: "S-Rank | 👊 The One Punch", xp: 5001 },
+  { name: "SS-Rank | 💀 Bankai Master", xp: 10001 },
+  { name: "SSS-Rank | 🌑 Shadow Monarch", xp: 20001 },
+  { name: "Sukuna-Rank | King of Curses", xp: 30001},
+  { name: "No.1-Rank | 🦸‍♂️ One For All", xp: 40001 },
+  { name: "Gojo-Rank | 🤞 Special Grade Sorcerer", xp: 50001 },
+  { name: "Chimera-Rank | 🐜 Ant King", xp: 60001},
+  { name: "Overlord-Rank | ⏳ Sorcerer King", xp: 70001 },
+  { name: "Titan-Rank | 👹 Founding Titan", xp: 80001 },
+  { name: "Devil-Rank | 🪚 Chainsaw Man", xp: 90001 },
+  { name: "Liberation-Rank | 🏴‍☠️ Sun God Nika", xp: 100001 },
+  { name: "Legendary-Rank | 🔮 Reincarnated Sage", xp: 125001 },
+  { name: "Exodia-Rank | 🃏 Forbidden One", xp: 150001 },
+  { name: "Dragon-Rank | 🐲 Zeno Sama", xp: 175001 },
+  { name: "Celestial-Rank | 🔥 Slime Demon Lord", xp: 200001 },
+  { name: "Pinnacle-Rank | ☀️ Lion Sin of Pride", xp: 300001 },
+  { name: "Multiversal-Rank | ⏳ The Conqueror", xp: 400001 },
+  { name: "The One Above All | 🌟 Supreme Principle", xp: 500001 },
+];
 
-  let currentRank = "E-Rank | Rookie Hunter";
+  let currentRank = "E-Rank | 🔰 Rookie Hunter";
   for (const rank of ranks) {
     if (xp >= rank.xp) {
       currentRank = rank.name;

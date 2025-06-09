@@ -45,3 +45,5 @@ yarn.lock
 
 # Test output (ถ้ามีการใช้ testing framework)
 coverage/
+
+codeleveling-1.1.3.vsix

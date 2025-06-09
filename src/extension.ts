@@ -18,23 +18,34 @@ interface XPData {
 }
 
 const ranks = [
-  { name: "E-Rank | Rookie Hunter", xp: 0 },
-  { name: "D-Rank | Wandering Adventurer", xp: 101 },
-  { name: "C-Rank | Spirit Exorcist", xp: 501 },
-  { name: "B-Rank | Arcane Alchemist", xp: 1001 },
-  { name: "A-Rank | Crimson Hokage", xp: 3001 },
-  { name: "S-Rank | The One Punch", xp: 5001 },
-  { name: "SS-Rank | Special Grade Sorcerer", xp: 10001 },
-  { name: "SSS-Rank | Shadow Monarch", xp: 20001 },
-  { name: "Mythical-Rank | Transcendent Being", xp: 40001 },
-  { name: "God-Rank | Cosmic Deity", xp: 60001 },
-  { name: "True God-Rank | Allfather of Eternity", xp: 100001 },
-  { name: "Celestial-Rank | Architect of Creation", xp: 200001 },
-  { name: "The One Above All | Supreme Principle", xp: 500001 },
+  { name: "E-Rank | 🔰 Rookie Hunter", xp: 0 },
+  { name: "D-Rank | 🚶‍♂️ Wandering Adventurer", xp: 101 },
+  { name: "C-Rank | 👻 Spirit Exorcist", xp: 501 },
+  { name: "B-Rank | 🦾 Arcane Alchemist", xp: 1001 },
+  { name: "A-Rank | 🍥 Fox Hokage", xp: 3001 },
+  { name: "S-Rank | 👊 The One Punch", xp: 5001 },
+  { name: "SS-Rank | 💀 Bankai Master", xp: 10001 },
+  { name: "SSS-Rank | 🌑 Shadow Monarch", xp: 20001 },
+  { name: "Sukuna-Rank | King of Curses", xp: 30001},
+  { name: "No.1-Rank | 🦸‍♂️ One For All", xp: 40001 },
+  { name: "Gojo-Rank | 🤞 Special Grade Sorcerer", xp: 50001 },
+  { name: "Chimera-Rank | 🐜 Ant King", xp: 60001},
+  { name: "Overlord-Rank | ⏳ Sorcerer King", xp: 70001 },
+  { name: "Titan-Rank | 👹 Founding Titan", xp: 80001 },
+  { name: "Devil-Rank | 🪚 Chainsaw Man", xp: 90001 },
+  { name: "Liberation-Rank | 🏴‍☠️ Sun God Nika", xp: 100001 },
+  { name: "Legendary-Rank | 🔮 Reincarnated Sage", xp: 125001 },
+  { name: "Exodia-Rank | 🃏 Forbidden One", xp: 150001 },
+  { name: "Dragon-Rank | 🐲 Zeno Sama", xp: 175001 },
+  { name: "Celestial-Rank | 🔥 Slime Demon Lord", xp: 200001 },
+  { name: "Pinnacle-Rank | ☀️ Lion Sin of Pride", xp: 300001 },
+  { name: "Multiversal-Rank | ⏳ The Conqueror", xp: 400001 },
+  { name: "The One Above All | 🌟 Supreme Principle", xp: 500001 },
 ];
 
+
 export function getRankLocal(xp: number): string {
-  let currentRank = "E-Rank | Rookie Hunter";
+  let currentRank = "E-Rank | 🔰 Rookie Hunter";
   for (const rank of ranks) {
     if (xp >= rank.xp) {
       currentRank = rank.name;
@@ -68,11 +79,11 @@ export function readXP(context: vscode.ExtensionContext): XPData {
       typeof xpData.xp !== "number" ||
       typeof xpData.rank !== "string"
     ) {
-      return { xp: 0, rank: "E-Rank | Rookie Hunter" };
+      return { xp: 0, rank: "E-Rank | 🔰 Rookie Hunter" };
     }
     return xpData;
   } catch {
-    return { xp: 0, rank: "E-Rank | Rookie Hunter" };
+    return { xp: 0, rank: "E-Rank | 🔰 Rookie Hunter" };
   }
 }
 
@@ -93,7 +104,7 @@ let buffStatusBarItem: vscode.StatusBarItem;
 export async function updateStatusBar(context: vscode.ExtensionContext) {
   const xpData = context.globalState.get<{ xp: number; rank: string }>("xpData") || {
     xp: 0,
-    rank: "E-Rank | Rookie Hunter",
+    rank: "E-Rank | 🔰 Rookie Hunter",
   };
 
   const nextXP = getNextRankXP(xpData.xp);
@@ -146,7 +157,7 @@ export async function updateStatusBar(context: vscode.ExtensionContext) {
 export async function activate(context: vscode.ExtensionContext) {
 
 
-  let xpData = context.globalState.get<XPData>("xpData") || { xp: 0, rank: "E-Rank | Rookie Hunter" };
+  let xpData = context.globalState.get<XPData>("xpData") || { xp: 0, rank: "E-Rank | 🔰 Rookie Hunter" };
   checkAndResetDailyQuests(context);
 
   statusBarItem = vscode.window.createStatusBarItem(
@@ -377,7 +388,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("codeleveling.reset", async () => {
-      xpData = { xp: 0, rank: "E-Rank | Rookie Hunter" };
+      xpData = { xp: 0, rank: "E-Rank | 🔰 Rookie Hunter" };
       await writeXP(context, xpData);
       vscode.window.showInformationMessage("🧹 XP ถูกรีเซ็ตเรียบร้อยแล้ว!");
       await context.globalState.update("xpData", xpData);

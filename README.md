@@ -18,21 +18,32 @@
 
 ## Rank
 
-| Rank                                        | Start XP |
-|---------------------------------------------|----------|
-| E-Rank \| Rookie Hunter                     | 0        |
-| D-Rank \| Wandering Adventurer              | 101      |
-| C-Rank \| Spirit Exorcist                   | 501      |
-| B-Rank \| Arcane Alchemist                  | 1001     |
-| A-Rank \| Crimson Hokage                    | 3001     |
-| S-Rank \| The One Punch                     | 5001     |
-| SS-Rank \| Special Grade Sorcerer           | 10001    |
-| SSS-Rank \| Shadow Monarch                  | 20001    |
-| Mythical-Rank \| Transcendent Being         | 40001    |
-| God-Rank \| Cosmic Deity                    | 60001    |
-| True God-Rank \| Allfather of Eternity      | 100001   |
-| Celestial-Rank \| Architect of Creation     | 200001   |
-| The One Above All \| Supreme Principle      | 500001   |
+| Rank                                      | Start XP |
+| ----------------------------------------- | -------- |
+| E-Rank \| 🔰 Rookie Hunter                | 0        |
+| D-Rank \| 🚶‍♂️ Wandering Adventurer      | 101      |
+| C-Rank \| 👻 Spirit Exorcist              | 501      |
+| B-Rank \| 🦾 Arcane Alchemist             | 1001     |
+| A-Rank \| 🍥 Fox Hokage                   | 3001     |
+| S-Rank \| 👊 The One Punch                | 5001     |
+| SS-Rank \| 💀 Bankai Master               | 10001    |
+| SSS-Rank \| 🌑 Shadow Monarch             | 20001    |
+| Sukuna-Rank \| King of Curses             | 30001    |
+| No.1-Rank \| 🦸‍♂️ One For All            | 40001    |
+| Gojo-Rank \| 🤞 Special Grade Sorcerer    | 50001    |
+| Chimera-Rank \| 🐜 Ant King               | 60001    |
+| Overlord-Rank \| ⏳ Sorcerer King          | 70001    |
+| Titan-Rank \| 👹 Founding Titan           | 80001    |
+| Devil-Rank \| 🪚 Chainsaw Man             | 90001    |
+| Liberation-Rank \| 🏴‍☠️ Sun God Nika     | 100001   |
+| Legendary-Rank \| 🔮 Reincarnated Sage    | 125001   |
+| Exodia-Rank \| 🃏 Forbidden One           | 150001   |
+| Dragon-Rank \| 🐲 Zeno Sama               | 175001   |
+| Celestial-Rank \| 🔥 Slime Demon Lord     | 200001   |
+| Pinnacle-Rank \| ☀️ Lion Sin of Pride     | 300001   |
+| Multiversal-Rank \| ⏳ The Conqueror       | 400001   |
+| The One Above All \| 🌟 Supreme Principle | 500001   |
+
 
 ---
 

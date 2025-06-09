@@ -187,7 +187,7 @@ export async function updateQuestProgress(
       
       await context.globalState.update("xpData", xpData);
       
-      // *** เพิ่มบรรทัดนี้ - อัปเดต Status Bar ทันที ***
+      // อัปเดต Status Bar ทันที
       await updateStatusBar(context);
       
       vscode.window.showInformationMessage(
@@ -202,7 +202,6 @@ export async function updateQuestProgress(
       };
       gainedBuffs.push(buff);
 
-      // *** เพิ่มบรรทัดนี้ - อัปเดต Status Bar เพื่อแสดง Buff ***
       await updateStatusBar(context);
 
       vscode.window.showInformationMessage(
@@ -216,7 +215,7 @@ export async function updateQuestProgress(
       };
       gainedBuffs.push(buff);
 
-      // *** เพิ่มบรรทัดนี้ - อัปเดต Status Bar เพื่อแสดง Buff ***
+      // อัปเดต Status Bar เพื่อแสดง Buff
       await updateStatusBar(context);
 
       vscode.window.showInformationMessage(
